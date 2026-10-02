@@ -9,12 +9,12 @@ dist/
 .env.local
 .env.production
 
-# Text files
-.txt
-
 # Editor
 .vscode/
 .idea/
 
 # Local uploads
 uploads/
+
+# Product link lists for scripts/add-product.js
+list.txt
