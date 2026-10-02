@@ -9,6 +9,9 @@ dist/
 .env.local
 .env.production
 
+# Text files
+.txt
+
 # Editor
 .vscode/
 .idea/
