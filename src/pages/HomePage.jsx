@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { fetchHauls } from "../lib/sheets";
+import { optimizeImage } from "../lib/image";
 import { Spinner, ErrorBanner, TileSkeleton } from "../components/Feedback";
 import nainaAvatar from "../assets/naina-rawat.jpg";
 
@@ -144,7 +145,7 @@ export default function HomePage() {
                   >
                     <div className="product-tile-img" style={{ background: palette.bg }}>
                       {haul.thumbnail ? (
-                        <img src={haul.thumbnail} alt={haul.haul_title} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+                        <img src={optimizeImage(haul.thumbnail, 400)} decoding="async" alt={haul.haul_title} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
                       ) : (
                         <div style={{ position: "absolute", inset: 0, opacity: 0.1, background: `radial-gradient(circle at center, ${palette.accent}, transparent)` }} />
                       )}

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { fetchHaul, fetchProducts } from "../lib/sheets";
+import { optimizeImage } from "../lib/image";
 import { Spinner, ErrorBanner, CardSkeleton } from "../components/Feedback";
 
 // SVG placeholder icons cycling by product index
@@ -76,7 +77,7 @@ export default function HaulPage() {
             {/* Cover thumbnail */}
             <div style={{ width:"5rem", height:"7rem", position:"relative", flexShrink:0, overflow:"visible" }}>
               {haul.thumbnail ? (
-                <img src={haul.thumbnail} alt={haul.haul_title} style={{ width:"100%", height:"100%", borderRadius:"1rem", objectFit:"cover", boxShadow:"0 2px 12px rgba(58,38,28,0.1)", border:"1px solid rgba(0,0,0,0.05)" }} loading="lazy" />
+                <img src={optimizeImage(haul.thumbnail, 200)} decoding="async" alt={haul.haul_title} style={{ width:"100%", height:"100%", borderRadius:"1rem", objectFit:"cover", boxShadow:"0 2px 12px rgba(58,38,28,0.1)", border:"1px solid rgba(0,0,0,0.05)" }} loading="lazy" />
               ) : (
                 <div style={{ width:"100%", height:"100%", borderRadius:"1rem", background:"var(--placeholder)", position:"relative", overflow:"hidden", boxShadow:"0 2px 12px rgba(58,38,28,0.1)", border:"1px solid rgba(0,0,0,0.05)" }}>
                   <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"50%", background:"rgba(234,163,21,0.3)", borderTopLeftRadius:"50%", borderTopRightRadius:"50%" }} />
@@ -114,7 +115,7 @@ export default function HaulPage() {
               <article key={i} id={`product-card-${i+1}`} className="product-card">
                 <div className="product-card-thumb">
                   {p.image_url ? (
-                    <img src={p.image_url} alt={p.product_name} style={{ width:"100%", height:"100%", objectFit:"cover" }} loading="lazy" />
+                    <img src={optimizeImage(p.image_url, 400)} decoding="async" alt={p.product_name} style={{ width:"100%", height:"100%", objectFit:"cover" }} loading="lazy" />
                   ) : (
                     ICONS[i % ICONS.length]
                   )}
