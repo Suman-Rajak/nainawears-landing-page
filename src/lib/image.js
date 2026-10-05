@@ -8,3 +8,8 @@ export function optimizeImage(url, width) {
   if (!url || !/^https?:\/\//i.test(url)) return url;
   return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=75`;
 }
+
+/** onError handler: hide a broken image so the tile's fallback background shows instead */
+export function hideOnError(e) {
+  e.currentTarget.style.display = 'none';
+}

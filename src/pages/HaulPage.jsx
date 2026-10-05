@@ -2,8 +2,9 @@ import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { fetchHaul, fetchProducts } from "../lib/sheets";
-import { optimizeImage } from "../lib/image";
-import { Spinner, ErrorBanner, CardSkeleton } from "../components/Feedback";
+import { hideOnError, optimizeImage } from "../lib/image";
+import { ErrorBanner, CardSkeleton, HaulHeaderSkeleton } from "../components/Feedback";
+import { ArrowLeft, ArrowUpRight, Heart, Sparkle } from "../components/Icons";
 
 // SVG placeholder icons cycling by product index
 const ICONS = [
@@ -50,57 +51,69 @@ export default function HaulPage() {
     return null;
   }
 
+  const count = products?.length ?? 0;
+
   return (
-    <main className="page-wrapper" style={{ background:"var(--cream-alt)" }}>
+    <main className="page-wrapper">
 
       {/* Back nav */}
-      <nav className="back-nav">
+      <nav className="top-bar">
         <button id="back-to-hauls" className="back-link" onClick={() => navigate("/")}>
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-          </svg>
+          <ArrowLeft />
           All hauls
         </button>
       </nav>
 
-      {/* Header skeleton while loading */}
-      {loading && <Spinner />}
+      {/* Skeletons while loading */}
+      {loading && (
+        <>
+          <HaulHeaderSkeleton />
+          <section className="section-px haul-products-grid" style={{ marginBottom:"2rem" }}>
+            {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+          </section>
+        </>
+      )}
 
       {/* Error state */}
-      {error && <ErrorBanner message={error} onRetry={() => setRetryKey(k => k+1)} />}
+      {error && (
+        <div className="section-px">
+          <ErrorBanner message={error} onRetry={() => setRetryKey(k => k+1)} />
+        </div>
+      )}
 
       {/* Loaded content */}
       {!loading && !error && haul && (
         <>
           {/* Header */}
-          <header className="section-px" style={{ marginTop:"1rem", marginBottom:"1.25rem", display:"flex", alignItems:"center", gap:"1rem" }}>
-            {/* Cover thumbnail */}
-            <div style={{ width:"5rem", height:"7rem", position:"relative", flexShrink:0, overflow:"visible" }}>
-              {haul.thumbnail ? (
-                <img src={optimizeImage(haul.thumbnail, 200)} decoding="async" alt={haul.haul_title} style={{ width:"100%", height:"100%", borderRadius:"1rem", objectFit:"cover", boxShadow:"0 2px 12px rgba(58,38,28,0.1)", border:"1px solid rgba(0,0,0,0.05)" }} loading="lazy" />
-              ) : (
-                <div style={{ width:"100%", height:"100%", borderRadius:"1rem", background:"var(--placeholder)", position:"relative", overflow:"hidden", boxShadow:"0 2px 12px rgba(58,38,28,0.1)", border:"1px solid rgba(0,0,0,0.05)" }}>
-                  <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"50%", background:"rgba(234,163,21,0.3)", borderTopLeftRadius:"50%", borderTopRightRadius:"50%" }} />
-                  <div style={{ position:"absolute", top:"1rem", left:"50%", transform:"translateX(-50%)", width:"2rem", height:"2rem", borderRadius:"50%", background:"rgba(139,168,150,0.4)" }} />
-                </div>
-              )}
-              <div style={{ position:"absolute", top:"-0.25rem", right:"-0.25rem", background:"var(--sage-alt)", color:"#fff", fontFamily:"var(--font-display)", fontWeight:700, fontSize:"0.85rem", width:"2rem", height:"2rem", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid var(--cream-alt)", zIndex:10, boxShadow:"0 1px 4px rgba(0,0,0,0.1)" }}>
-                #{haul.haul_no}
+          <header className="haul-hero">
+            {haul.thumbnail && (
+              <div className="haul-hero-bg" aria-hidden="true">
+                <img src={optimizeImage(haul.thumbnail, 200)} decoding="async" onError={hideOnError} alt="" />
               </div>
+            )}
+
+            {/* Cover thumbnail */}
+            <div className="haul-cover reveal">
+              <div className="haul-cover-img">
+                {haul.thumbnail ? (
+                  <img src={optimizeImage(haul.thumbnail, 300)} decoding="async" onError={hideOnError} alt={haul.haul_title} />
+                ) : (
+                  <div style={{ width:"100%", height:"100%", position:"relative", background:"linear-gradient(135deg,#F3CF73,#D9894F)" }}>
+                    <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"50%", background:"rgba(255,255,255,0.25)", borderTopLeftRadius:"50%", borderTopRightRadius:"50%" }} />
+                    <div style={{ position:"absolute", top:"1rem", left:"50%", transform:"translateX(-50%)", width:"2rem", height:"2rem", borderRadius:"50%", background:"rgba(255,255,255,0.4)" }} />
+                  </div>
+                )}
+              </div>
+              <span className="haul-cover-badge">#{haul.haul_no}</span>
             </div>
 
-            <div>
-              <h1 style={{ fontFamily:"var(--font-display)", fontWeight:700, fontSize:"clamp(1.5rem,5vw,2.25rem)", lineHeight:1.1, color:"var(--brown-alt)", marginBottom:"0.35rem" }}>
-                {haul.haul_title}
-              </h1>
-              <p style={{ color:"var(--muted-alt)", fontSize:"0.875rem", fontWeight:500 }}>
-                {products?.length ?? 0} item{products?.length !== 1 ? "s" : ""} featured
-              </p>
-              {haul.category && (
-                <span style={{ display:"inline-block", marginTop:"0.4rem", background:"rgba(138,162,127,0.15)", color:"var(--sage)", border:"1px solid rgba(138,162,127,0.3)", borderRadius:9999, padding:"2px 10px", fontSize:12, fontWeight:600 }}>
-                  {haul.category}
-                </span>
-              )}
+            <div className="haul-meta reveal" style={{ "--i": 1 }}>
+              <span className="eyebrow"><Sparkle size={12} /> Haul no. {haul.haul_no}</span>
+              <h1 className="haul-title">{haul.haul_title}</h1>
+              <div className="haul-meta-row">
+                {haul.category && <span className="tag">{haul.category}</span>}
+                <span className="meta-chip">{count} item{count !== 1 ? "s" : ""} featured</span>
+              </div>
             </div>
           </header>
 
@@ -110,24 +123,24 @@ export default function HaulPage() {
           </div>
 
           {/* Product cards */}
-          <section className="section-px haul-products-grid" style={{ marginBottom:"2rem" }}>
+          <section className="section-px haul-products-grid" style={{ marginBottom:"2.5rem" }}>
             {products && products.length > 0 ? products.map((p, i) => (
-              <article key={i} id={`product-card-${i+1}`} className="product-card">
+              <article key={i} id={`product-card-${i+1}`} className="product-card reveal" style={{ "--i": Math.min(i + 2, 12) }}>
                 <div className="product-card-thumb">
                   {p.image_url ? (
-                    <img src={optimizeImage(p.image_url, 400)} decoding="async" alt={p.product_name} style={{ width:"100%", height:"100%", objectFit:"cover" }} loading="lazy" />
+                    <img src={optimizeImage(p.image_url, 400)} decoding="async" onError={hideOnError} alt={p.product_name} loading="lazy" />
                   ) : (
                     ICONS[i % ICONS.length]
                   )}
+                  <span className="product-index">{String(i + 1).padStart(2, "0")}</span>
                 </div>
                 <div className="product-card-body">
                   <div>
-                    <h2 style={{ fontFamily:"var(--font-display)", fontWeight:700, fontSize:"clamp(1rem,2.5vw,1.2rem)", lineHeight:1.2, color:"var(--brown-alt)" }}>
-                      {p.product_name}
-                    </h2>
+                    <h2 className="product-name">{p.product_name}</h2>
                     {p.note && (
-                      <p style={{ color:"var(--muted-alt)", fontSize:"0.75rem", marginTop:"0.25rem", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                        {p.note}
+                      <p className="product-note">
+                        <Sparkle size={11} />
+                        <span>{p.note}</span>
                       </p>
                     )}
                   </div>
@@ -136,10 +149,10 @@ export default function HaulPage() {
                     href={p.amazon_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-terracotta"
-                    style={{ marginTop:"0.75rem", textDecoration:"none" }}
+                    className="btn-shop"
                   >
-                    View on Amazon
+                    Shop on Amazon
+                    <ArrowUpRight />
                   </a>
                 </div>
               </article>
@@ -149,9 +162,10 @@ export default function HaulPage() {
           </section>
 
           {/* Footer */}
-          <footer className="section-px" style={{ paddingBottom:"2.5rem", textAlign:"center" }}>
-            <p style={{ fontSize:"11px", color:"var(--muted-alt)", fontWeight:500, lineHeight:1.6, maxWidth:"320px", margin:"0 auto" }}>
-              As an Amazon Associate I earn from qualifying purchases.
+          <footer className="section-px site-footer">
+            <p className="disclosure" style={{ justifyContent:"center" }}>
+              <Heart size={14} />
+              <span>As an Amazon Associate I earn from qualifying purchases.</span>
             </p>
           </footer>
         </>

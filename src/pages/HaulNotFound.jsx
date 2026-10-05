@@ -1,17 +1,16 @@
-﻿import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight, BlockPrintMotif } from "../components/Icons";
 
 export default function HaulNotFound() {
   const navigate = useNavigate();
 
   return (
-    <main className="page-wrapper" style={{ background:"var(--cream-alt)", position:"relative", overflow:"hidden" }}>
+    <main className="page-wrapper" style={{ position:"relative", overflow:"hidden" }}>
 
       {/* Back nav */}
-      <nav style={{ padding:"2rem 1.25rem 0.5rem", position:"absolute", top:0, width:"100%", zIndex:20 }}>
+      <nav className="top-bar" style={{ position:"absolute", width:"100%" }}>
         <button id="back-btn-not-found" className="back-link" onClick={() => navigate("/")}>
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-          </svg>
+          <ArrowLeft />
           Back
         </button>
       </nav>
@@ -26,41 +25,30 @@ export default function HaulNotFound() {
         flex:1, display:"flex", flexDirection:"column",
         alignItems:"center", justifyContent:"center",
         padding:"0 2rem", position:"relative", zIndex:10,
-        minHeight:"100vh",
+        minHeight:"min(100vh, 760px)",
       }}>
-        {/* SVG illustration */}
-        <div style={{ marginBottom:"2rem", position:"relative" }}>
-          <div style={{ position:"absolute", inset:0, background:"rgba(243,185,56,0.1)", borderRadius:"50%", filter:"blur(32px)", transform:"scale(1.5)" }} />
-          <svg
-            width="140" height="140" viewBox="0 0 140 140" fill="none"
-            style={{ position:"relative", zIndex:1, width:"clamp(100px,25vw,160px)", height:"auto" }}
-          >
-            <path d="M70 20C85 45 95 60 70 85C45 60 55 45 70 20Z" fill="#C85A48" opacity="0.9"/>
-            <path d="M70 85C95 90 115 70 100 45C85 60 75 70 70 85Z" fill="#C85A48" opacity="0.9"/>
-            <path d="M70 85C45 90 25 70 40 45C55 60 65 70 70 85Z" fill="#C85A48" opacity="0.9"/>
-            <circle cx="70" cy="72" r="3" fill="#FDF9F1"/>
-            <circle cx="62" cy="62" r="2.5" fill="#FDF9F1"/>
-            <circle cx="78" cy="62" r="2.5" fill="#FDF9F1"/>
-            <path d="M70 95C100 95 120 115 100 125C85 115 75 105 70 95Z" fill="#8BA896" opacity="0.9"/>
-            <path d="M70 95C40 95 20 115 40 125C55 115 65 105 70 95Z" fill="#8BA896" opacity="0.9"/>
-            <path d="M70 85V130" stroke="#8BA896" strokeWidth="4" strokeLinecap="round"/>
-          </svg>
+        {/* Illustration */}
+        <div className="reveal" style={{ marginBottom:"2rem", position:"relative" }}>
+          <div style={{ position:"absolute", inset:0, background:"radial-gradient(circle, rgba(243,185,56,0.45), rgba(209,98,68,0.15) 55%, transparent 70%)", borderRadius:"50%", filter:"blur(24px)", transform:"scale(1.6)" }} />
+          <BlockPrintMotif className="float" style={{ position:"relative", zIndex:1, width:"clamp(110px,25vw,160px)", height:"auto" }} />
         </div>
 
-        <h1 style={{
-          fontFamily:"var(--font-display)", fontWeight:700,
-          fontSize:"clamp(1.4rem,4vw,2rem)",
-          lineHeight:1.2, textAlign:"center",
-          color:"var(--brown-alt)", marginBottom:"0.625rem",
+        <span className="eyebrow reveal" style={{ color:"var(--terra-alt)", marginBottom:"0.75rem", "--i": 1 }}>Hmm, nothing here</span>
+        <h1 className="reveal" style={{
+          fontFamily:"var(--font-display)", fontWeight:600,
+          fontSize:"clamp(1.9rem,6vw,2.6rem)", letterSpacing:"-0.03em",
+          lineHeight:1.05, textAlign:"center",
+          color:"var(--ink)", marginBottom:"0.75rem", "--i": 2,
         }}>
-          No haul with that<br/>number yet
+          No haul with that<br/><em style={{ fontWeight:500, color:"var(--terra-alt)" }}>number yet</em>
         </h1>
-        <p style={{ color:"var(--muted-alt)", fontSize:"clamp(14px,2vw,16px)", textAlign:"center", marginBottom:"2.5rem", maxWidth:"260px" }}>
+        <p className="reveal" style={{ color:"var(--muted-alt)", fontSize:"clamp(14px,2vw,16px)", lineHeight:1.5, textAlign:"center", marginBottom:"2.25rem", maxWidth:"280px", "--i": 3 }}>
           Check the badge on the reel to make sure it&apos;s the right number.
         </p>
 
-        <button id="try-again-btn" className="btn-mustard" onClick={() => navigate("/")}>
+        <button id="try-again-btn" className="btn-glow reveal" onClick={() => navigate("/")} style={{ flex:"none", "--i": 4 }}>
           Try again
+          <ArrowRight size={18} />
         </button>
       </div>
 

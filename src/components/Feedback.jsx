@@ -1,4 +1,4 @@
-﻿/* Spinner — shown while fetching data */
+/* Spinner — shown while fetching data */
 export function Spinner() {
   return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"1rem", padding:"3rem 1rem", flex:1 }}>
@@ -13,7 +13,6 @@ export function Spinner() {
       <p style={{ fontFamily:"var(--font-display)", fontWeight:600, fontSize:14, color:"var(--muted-alt)" }}>
         Loading&hellip;
       </p>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
@@ -21,8 +20,8 @@ export function Spinner() {
 /* Error banner */
 export function ErrorBanner({ message, onRetry }) {
   return (
-    <div style={{ margin:"1.5rem 1rem", background:"rgba(200,90,72,0.08)", border:"1px solid rgba(200,90,72,0.2)", borderRadius:16, padding:"1.25rem 1.5rem", display:"flex", flexDirection:"column", gap:"0.75rem" }}>
-      <p style={{ fontFamily:"var(--font-display)", fontWeight:700, fontSize:15, color:"var(--terra-alt)" }}>
+    <div style={{ margin:"1.5rem 0", background:"rgba(200,90,72,0.08)", border:"1px solid rgba(200,90,72,0.2)", borderRadius:20, padding:"1.25rem 1.5rem", display:"flex", flexDirection:"column", gap:"0.75rem" }}>
+      <p style={{ fontFamily:"var(--font-display)", fontWeight:600, fontSize:17, color:"var(--terra-alt)" }}>
         Could not load data
       </p>
       <p style={{ fontSize:13, color:"var(--muted-alt)", lineHeight:1.5 }}>{message}</p>
@@ -35,13 +34,21 @@ export function ErrorBanner({ message, onRetry }) {
   );
 }
 
-/* Tile-shaped skeleton for the product grid */
+/* Tile-shaped skeleton for the haul grid */
 export function TileSkeleton() {
+  return <div className="skeleton" style={{ width:"100%", aspectRatio:"3/4", borderRadius:20 }} />;
+}
+
+/* Header-shaped skeleton for the haul page */
+export function HaulHeaderSkeleton() {
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:"0.375rem" }}>
-      <div style={{ width:"100%", aspectRatio:"2/3", borderRadius:18, background:"var(--placeholder)", animation:"pulse 1.4s ease-in-out infinite" }} />
-      <div style={{ height:10, borderRadius:6, background:"var(--placeholder)", animation:"pulse 1.4s ease-in-out infinite", width:"70%" }} />
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.45}}`}</style>
+    <div className="section-px" style={{ display:"flex", alignItems:"center", gap:"1.25rem", padding:"1rem var(--gutter) 1.75rem" }}>
+      <div className="skeleton" style={{ width:96, aspectRatio:"3/4", borderRadius:18, flexShrink:0 }} />
+      <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"0.6rem" }}>
+        <div className="skeleton" style={{ height:10, width:"35%", borderRadius:6 }} />
+        <div className="skeleton" style={{ height:26, width:"85%", borderRadius:8 }} />
+        <div className="skeleton" style={{ height:20, width:"50%", borderRadius:9999 }} />
+      </div>
     </div>
   );
 }
@@ -50,11 +57,12 @@ export function TileSkeleton() {
 export function CardSkeleton() {
   return (
     <div className="product-card" style={{ pointerEvents:"none" }}>
-      <div style={{ width:"7rem", height:"7rem", borderRadius:12, background:"var(--placeholder)", flexShrink:0, animation:"pulse 1.4s ease-in-out infinite" }} />
+      <div className="skeleton product-card-thumb" />
       <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"0.5rem", paddingTop:"0.25rem" }}>
-        <div style={{ height:14, borderRadius:6, background:"var(--placeholder)", animation:"pulse 1.4s ease-in-out infinite", width:"80%" }} />
-        <div style={{ height:10, borderRadius:6, background:"var(--placeholder)", animation:"pulse 1.4s ease-in-out infinite", width:"50%" }} />
-        <div style={{ marginTop:"auto", height:40, borderRadius:9999, background:"var(--placeholder)", animation:"pulse 1.4s ease-in-out infinite" }} />
+        <div className="skeleton" style={{ height:14, borderRadius:6, width:"85%" }} />
+        <div className="skeleton" style={{ height:14, borderRadius:6, width:"60%" }} />
+        <div className="skeleton" style={{ height:10, borderRadius:6, width:"45%" }} />
+        <div className="skeleton" style={{ marginTop:"auto", height:44, borderRadius:14 }} />
       </div>
     </div>
   );

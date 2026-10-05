@@ -1,19 +1,20 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { fetchHauls } from "../lib/sheets";
-import { optimizeImage } from "../lib/image";
-import { Spinner, ErrorBanner, TileSkeleton } from "../components/Feedback";
+import { hideOnError, optimizeImage } from "../lib/image";
+import { ErrorBanner, TileSkeleton } from "../components/Feedback";
+import { ArrowRight, BlockPrintMotif, Heart, Sparkle } from "../components/Icons";
 import nainaAvatar from "../assets/naina-rawat.jpg";
 
-// Tile colour palette cycling through brand colours
+// Fallback tile backgrounds (used when a haul has no thumbnail), cycling through brand colours
 const TILE_PALETTES = [
-  { bg: "linear-gradient(135deg,#E8E4D9,#DFD9CA)", accent: "rgba(58,38,28,0.05)" },
-  { bg: "linear-gradient(135deg,rgba(138,162,127,0.2),rgba(138,162,127,0.4))", accent: "rgba(138,162,127,0.15)" },
-  { bg: "linear-gradient(135deg,rgba(209,98,68,0.1),rgba(209,98,68,0.3))", accent: "rgba(209,98,68,0.1)" },
-  { bg: "linear-gradient(135deg,rgba(243,185,56,0.2),rgba(243,185,56,0.4))", accent: "rgba(243,185,56,0.15)" },
-  { bg: "linear-gradient(135deg,rgba(58,38,28,0.06),rgba(58,38,28,0.18))", accent: "rgba(58,38,28,0.04)" },
-  { bg: "linear-gradient(135deg,rgba(138,162,127,0.1),rgba(138,162,127,0.3))", accent: "rgba(138,162,127,0.1)" },
+  "linear-gradient(135deg,#E8C27A,#D9894F)",
+  "linear-gradient(135deg,#A9BE9F,#6F8C63)",
+  "linear-gradient(135deg,#E79A7E,#C85A48)",
+  "linear-gradient(135deg,#F3CF73,#EAA315)",
+  "linear-gradient(135deg,#8C6E5E,#3F2C24)",
+  "linear-gradient(135deg,#C6D2B9,#8BA896)",
 ];
 
 // Category chips derived from sheet data + a static "All" chip
@@ -29,7 +30,8 @@ export default function HomePage() {
   const fetcher = useCallback(() => fetchHauls(), [fetchKey]);
   const { data: hauls, loading, error } = useFetch(fetcher, [fetchKey]);
 
-  function handleShow() {
+  function handleShow(e) {
+    e?.preventDefault();
     const n = Number(haulNum);
     if (!n) return;
     const exists = hauls?.some(h => Number(h.haul_no) === n);
@@ -37,134 +39,170 @@ export default function HomePage() {
     else navigate("/haul-not-found");
   }
 
-  // Build category list from sheet
+  // Build category list (with counts) from sheet
   const allCats = hauls
     ? ["All", ...new Set(hauls.map(h => h.category).filter(Boolean))]
     : STATIC_CATS;
+  const catCount = cat => (cat === "All" ? hauls?.length : hauls?.filter(h => h.category === cat).length) ?? 0;
 
   // Filter displayed tiles
   const filteredHauls = hauls
     ? (activeChip === "All" ? hauls : hauls.filter(h => h.category === activeChip))
     : [];
 
-  // Sort descending by haul_no
+  // Sort descending by haul_no; the newest one gets the spotlight card
   const sortedHauls = [...filteredHauls].sort((a, b) => Number(b.haul_no) - Number(a.haul_no));
+  const [latest, ...rest] = sortedHauls;
 
   return (
     <main className="page-wrapper">
 
       {/* Header */}
-      <header style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "clamp(1.5rem,5vw,3rem)", paddingBottom: "1rem", paddingLeft: "1.5rem", paddingRight: "1.5rem", textAlign: "center" }}>
-        <div className="avatar" style={{ marginBottom: "1rem" }}>
-          <img src={nainaAvatar} alt="Naina Rawat" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <header className="profile reveal">
+        <div className="avatar-ring">
+          <div className="avatar">
+            <img src={nainaAvatar} alt="Naina Rawat" />
+          </div>
         </div>
-        <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "clamp(1.4rem,4vw,2rem)", letterSpacing: "-0.02em", marginBottom: "0.25rem" }}>Naina Rawat</h1>
-        <p style={{ color: "var(--muted)", fontSize: "clamp(13px,2.5vw,16px)", fontWeight: 500 }}>Big style, small budget</p>
+        <h1 className="profile-name">Naina <em>Rawat</em></h1>
+        <p className="tagline"><Sparkle size={14} /> Big style, small budget</p>
       </header>
 
       {/* Divider */}
-      <div style={{ marginBottom: "1.5rem", marginTop: "0.5rem" }}><div className="divider-sm" /></div>
+      <div style={{ marginBottom: "1.75rem", marginTop: "0.5rem" }}><div className="divider-sm" /></div>
 
-      {/* Hero Card */}
-      <section className="section-px" style={{ marginBottom: "2rem" }}>
-        <div className="hero-card">
-          <div className="hero-card-text" style={{ position: "relative", zIndex: 1 }}>
-            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "clamp(1.1rem,3vw,1.4rem)", textAlign: "center", marginBottom: "1.25rem", color: "var(--brown-alt)", letterSpacing: "-0.01em" }}>
-              Watched a haul?<br />Type its number
-            </h2>
+      {/* Lookup Card */}
+      <section className="section-px reveal" style={{ marginBottom: "2.5rem", "--i": 1 }}>
+        <div className="lookup">
+          <BlockPrintMotif className="lookup-motif" />
+          <div>
+            <span className="eyebrow"><span className="live-dot" /> From the reels</span>
+            <h2 className="lookup-title">Watched a haul?<br /><em>Type its number.</em></h2>
           </div>
-          <div className="hero-card-controls" style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-            <input
-              id="haul-number-input"
-              type="number"
-              className="number-input"
-              value={haulNum}
-              onChange={e => setHaulNum(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleShow()}
-              placeholder="7"
-            />
-            <button id="show-products-btn" className="btn-primary" onClick={handleShow} style={{ maxWidth: "280px" }}>
+          <form className="lookup-form" onSubmit={handleShow}>
+            <label className="number-field">
+              <span className="number-field-hash" aria-hidden="true">#</span>
+              <input
+                id="haul-number-input"
+                type="number"
+                inputMode="numeric"
+                aria-label="Haul number"
+                className="number-input"
+                value={haulNum}
+                onChange={e => setHaulNum(e.target.value)}
+                placeholder="7"
+              />
+            </label>
+            <button id="show-products-btn" type="submit" className="btn-glow">
               Show my products
-              <svg style={{ width: "1.25rem", height: "1.25rem", opacity: 0.8 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
+              <ArrowRight size={18} />
             </button>
-          </div>
+          </form>
         </div>
       </section>
 
-      {/* Filter Chips */}
-      {!loading && !error && (
-        <nav style={{ marginBottom: "1.5rem" }}>
-          <ul className="chips-row no-scroll" style={{ listStyle: "none" }}>
-            {allCats.map(cat => (
-              <li key={cat}>
-                <button
-                  id={`chip-${cat.replace(/\s+/g, "-").replace(/[^\w-]/g, "")}`}
-                  className={`chip ${activeChip === cat ? "chip-active" : "chip-inactive"}`}
-                  onClick={() => setActiveChip(cat)}
-                >
-                  {cat}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
+      {/* Hauls */}
+      <section className="section-px" style={{ marginBottom: "3rem" }}>
+        <div className="section-head reveal" style={{ "--i": 2 }}>
+          <h2 className="section-title">All the <em>hauls</em></h2>
+          {hauls && <span className="section-count">{hauls.length} haul{hauls.length !== 1 ? "s" : ""}</span>}
+        </div>
 
-      {/* Error */}
-      {error && <ErrorBanner message={error} onRetry={() => setFetchKey(k => k + 1)} />}
+        {/* Filter Chips */}
+        {!loading && !error && (
+          <nav aria-label="Filter by category">
+            <ul className="chips-row no-scroll reveal" style={{ "--i": 3 }}>
+              {allCats.map(cat => (
+                <li key={cat}>
+                  <button
+                    id={`chip-${cat.replace(/\s+/g, "-").replace(/[^\w-]/g, "")}`}
+                    className={`chip ${activeChip === cat ? "chip-active" : "chip-inactive"}`}
+                    aria-pressed={activeChip === cat}
+                    onClick={() => setActiveChip(cat)}
+                  >
+                    {cat}
+                    <span className="chip-count">{catCount(cat)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
 
-      {/* Loading skeletons */}
-      {loading && (
-        <section className="section-px" style={{ marginBottom: "2.5rem" }}>
+        {/* Error */}
+        {error && <ErrorBanner message={error} onRetry={() => setFetchKey(k => k + 1)} />}
+
+        {/* Loading skeletons */}
+        {loading && (
           <div className="product-grid">
-            {Array.from({ length: 6 }).map((_, i) => <TileSkeleton key={i} />)}
+            {Array.from({ length: 4 }).map((_, i) => <TileSkeleton key={i} />)}
           </div>
-        </section>
-      )}
+        )}
 
-      {/* Haul Grid */}
-      {!loading && !error && (
-        <section className="section-px" style={{ marginBottom: "2.5rem" }}>
-          {sortedHauls.length === 0 ? (
+        {/* Spotlight + Haul Grid */}
+        {!loading && !error && (
+          !latest ? (
             <p style={{ textAlign: "center", color: "var(--muted-alt)", fontSize: 14, padding: "2rem 0" }}>
               No hauls found for this category yet.
             </p>
           ) : (
-            <div className="product-grid">
-              {sortedHauls.map((haul, idx) => {
-                const palette = TILE_PALETTES[idx % TILE_PALETTES.length];
-                return (
-                  <a
-                    key={haul.haul_no}
-                    id={`haul-tile-${haul.haul_no}`}
-                    className="product-tile"
-                    onClick={() => navigate(`/haul/${haul.haul_no}`)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <div className="product-tile-img" style={{ background: palette.bg }}>
-                      {haul.thumbnail ? (
-                        <img src={optimizeImage(haul.thumbnail, 400)} decoding="async" alt={haul.haul_title} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-                      ) : (
-                        <div style={{ position: "absolute", inset: 0, opacity: 0.1, background: `radial-gradient(circle at center, ${palette.accent}, transparent)` }} />
+            <>
+              <Link
+                key={`spot-${latest.haul_no}`}
+                to={`/haul/${latest.haul_no}`}
+                id={`haul-tile-${latest.haul_no}`}
+                className="spotlight reveal"
+                style={{ "--i": 4 }}
+              >
+                <div className="spotlight-media" style={{ background: TILE_PALETTES[0] }}>
+                  {latest.thumbnail && (
+                    <img src={optimizeImage(latest.thumbnail, 600)} decoding="async" onError={hideOnError} alt={latest.haul_title} />
+                  )}
+                  <span className="product-tile-badge">#{latest.haul_no}</span>
+                </div>
+                <div className="spotlight-body">
+                  <span className="eyebrow"><span className="live-dot" /> Latest haul</span>
+                  <h3 className="spotlight-title">{latest.haul_title}</h3>
+                  {latest.category && <span className="tag">{latest.category}</span>}
+                  <span className="spotlight-cta">Shop the haul <ArrowRight size={16} /></span>
+                </div>
+              </Link>
+
+              {rest.length > 0 && (
+                <div className="product-grid">
+                  {rest.map((haul, idx) => (
+                    <Link
+                      key={haul.haul_no}
+                      to={`/haul/${haul.haul_no}`}
+                      id={`haul-tile-${haul.haul_no}`}
+                      className="product-tile reveal"
+                      style={{ background: TILE_PALETTES[(idx + 1) % TILE_PALETTES.length], "--i": Math.min(idx + 5, 12) }}
+                    >
+                      {haul.thumbnail && (
+                        <img src={optimizeImage(haul.thumbnail, 400)} decoding="async" onError={hideOnError} alt={haul.haul_title} loading="lazy" />
                       )}
                       <span className="product-tile-badge">#{haul.haul_no}</span>
-                    </div>
-                    <p className="product-tile-name">{haul.haul_title}</p>
-                  </a>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      )}
+                      <span className="product-tile-go" aria-hidden="true"><ArrowRight size={14} /></span>
+                      <div className="product-tile-info">
+                        {haul.category && <p className="product-tile-cat">{haul.category}</p>}
+                        <p className="product-tile-name">{haul.haul_title}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </>
+          )
+        )}
+      </section>
 
       {/* Footer */}
-      <footer className="section-px" style={{ paddingBottom: "3rem", marginTop: "auto" }}>
-        <p style={{ textAlign: "center", fontSize: "11px", color: "rgba(139,120,109,0.7)", fontWeight: 500, lineHeight: 1.6 }}>
-          Some links on this page are affiliate links. If you purchase through them, I may earn a small commission at no extra cost to you. Thanks for supporting my content!
+      <footer className="section-px site-footer">
+        <p className="disclosure">
+          <Heart size={14} />
+          <span>Some links on this page are affiliate links. If you purchase through them, I may earn a small commission at no extra cost to you. Thanks for supporting my content!</span>
         </p>
+        <p className="footer-sign">— with love, Naina</p>
       </footer>
 
     </main>
