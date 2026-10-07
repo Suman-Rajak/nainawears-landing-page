@@ -1,0 +1,4 @@
+npm run add-product <haul number> list.txt
+
+Example - 
+npm run add-product 1 list.txt
